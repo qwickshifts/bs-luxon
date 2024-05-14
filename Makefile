@@ -11,9 +11,16 @@ help: ## Print this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}';
 	@echo "";
 
+.PHONY: nuke
+nuke: ## Delete all files that will be generated
+	rm -f $(project_name).opam
+	rm -rf node_modules
+	rm -rf _opam
+	rm -rf _build
+
 .PHONY: create-switch
 create-switch: ## Create opam switch
-	opam switch create . -y --deps-only
+	opam switch create . -y --deps-only --no-install --packages=dune,ocamlformat,ocaml-lsp-server,ocaml-base-compiler
 
 .PHONY: init
 init: create-switch install ## Configure everything to develop this repository in local
@@ -31,11 +38,11 @@ install: generate-opam ## Install development dependencies
 
 .PHONY: build
 build: ## Build the project
-	$(DUNE) build @main
+	$(DUNE) build
 
 .PHONY: watch
 watch: ## Watch for the filesystem and rebuild on every change
-	$(DUNE) build --watch @main
+	$(DUNE) build --watch 
 
 .PHONY: test
 test: 
